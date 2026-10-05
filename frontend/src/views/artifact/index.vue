@@ -67,6 +67,49 @@
       <span>共 {{ total }} 条出土遗物记录</span>
       <span v-if="errorMessage" class="error-text">{{ errorMessage }}</span>
     </footer>
+
+    <section class="desk-block">
+      <header class="desk-head">
+        <div>
+          <h3 class="desk-title">保护状态回写事项</h3>
+          <p class="desk-desc">现场保护方案会签完成后自动生成；同一方案重复提交不会追加第二份回写。</p>
+        </div>
+      </header>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>回写编号</th>
+            <th>来源方案编号</th>
+            <th>保护对象</th>
+            <th>保护状态</th>
+            <th>会签结论</th>
+            <th>生成时间</th>
+            <th>当前状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in writebacks" :key="String(item.id)">
+            <td>{{ item.回写编号 }}</td>
+            <td>{{ item.来源方案编号 }}</td>
+            <td>{{ item.保护对象 }}</td>
+            <td>{{ item.保护状态 }}</td>
+            <td>{{ item.会签结论 }}</td>
+            <td>{{ item.生成时间 }}</td>
+            <td>{{ item.status }}</td>
+            <td class="row-actions">
+              <button class="link" type="button" @click="confirm(item)">确认回写</button>
+            </td>
+          </tr>
+          <tr v-if="!writebacks.length">
+            <td colspan="8" class="empty-state">暂无保护状态回写事项，待现场保护方案会签完成后自动生成</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p v-if="wbMessage" :class="wbError ? 'error-text' : 'ok-text'">{{ wbMessage }}</p>
+    </section>
   </section>
 </template>
 
@@ -79,6 +122,7 @@ import {
   moduleMeta,
   runAction as applyAction,
 } from '@/api/local-service'
+import { confirmWriteBack, listWriteBacks } from '@/api/plan-service'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('artifact')
@@ -122,6 +166,24 @@ function runAction(action: string, row: EntryRow) {
   reload()
 }
 
+// 保护状态回写事项：由现场保护方案会签完成后自动生成。
+const writebacks = ref<EntryRow[]>([])
+const wbMessage = ref('')
+const wbError = ref(false)
+
+function confirm(item: EntryRow) {
+  const result = confirmWriteBack(Number(item.id))
+  wbMessage.value = result.message
+  wbError.value = !result.ok
+  if (result.ok) {
+    reloadWritebacks()
+  }
+}
+
+function reloadWritebacks() {
+  writebacks.value = listWriteBacks()
+}
+
 function reload() {
   errorMessage.value = ''
   try {
@@ -133,5 +195,8 @@ function reload() {
   }
 }
 
-onMounted(reload)
+onMounted(() => {
+  reload()
+  reloadWritebacks()
+})
 </script>

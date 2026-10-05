@@ -35,3 +35,25 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .error-text { color: #b42318; }
 .status-legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 10px; font-size: 12px; color: var(--muted); }
 .legend-item { background: #eef2f7; border-radius: 999px; padding: 2px 10px; }
+.desk-block { margin-top: 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.desk-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.desk-title { font-size: 15px; margin: 0; }
+.desk-desc { color: var(--muted); font-size: 12px; margin: 4px 0 10px; }
+.create-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+.create-form label span { display: block; font-size: 12px; color: var(--muted); }
+.create-form select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+.badge { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 12px; background: #eef2f7; }
+.badge.ok { background: #e7f6ec; color: #18794e; }
+.badge.warn { background: #fef4e2; color: #9a6a00; }
+.badge.conflict { background: #fdecea; color: #b42318; }
+.sign-panel { border: 1px dashed var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 10px; background: #fbfcfe; }
+.sign-title { margin: 0 0 8px; font-size: 14px; }
+.advice-text { font-size: 13px; margin: 4px 0; }
+.opinion-grid { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.opinion-card { flex: 1; min-width: 260px; }
+.opinion-card h5 { margin: 0 0 6px; font-size: 13px; }
+.opinion-card select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff; margin-bottom: 6px; }
+.opinion-card textarea { display: block; width: 100%; min-height: 56px; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; font-family: inherit; }
+.opinion-done { font-size: 13px; color: var(--muted); }
+.sign-done { font-size: 12px; color: #18794e; margin: 8px 0 0; }
+.ok-text { color: #18794e; }

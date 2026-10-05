@@ -1,4 +1,38 @@
+import { buildRecommendation } from './plan-rules'
 import type { EntryRow } from './types'
+
+// 会签方案示例行：处理建议由规则引擎生成，保证和会签台新建的方案口径一致。
+function seedPlan(
+  id: number,
+  recordCode: string,
+  object: string,
+  disease: string,
+  material: string,
+  extra: Partial<EntryRow> = {},
+): EntryRow {
+  const rec = buildRecommendation(object, disease, material)
+  return {
+    id,
+    status: '待处理',
+    pending: true,
+    abnormal: rec.conflict,
+    方案编号: `PLAN-${String(id).padStart(4, '0')}`,
+    关联处理编号: recordCode,
+    保护对象: object,
+    病害类型: disease,
+    拟用材料: material,
+    材料判定: rec.verdict,
+    处理建议: rec.advice,
+    建议依据: rec.basis,
+    负责人采纳: '未填写',
+    负责人意见: '',
+    修复人采纳: '未填写',
+    修复人意见: '',
+    会签状态: '待会签',
+    回写编号: '',
+    ...extra,
+  }
+}
 
 // 示例数据：首次打开时播种，之后浏览器里的改动优先，重置才会回到这份。
 export const SEED_ROWS: Record<string, EntryRow[]> = {
@@ -794,4 +828,14 @@ export const SEED_ROWS: Record<string, EntryRow[]> = {
       "记录状态": "工地接待样例3"
     }
   ],
+  "conservation_plan": [
+    seedPlan(1, "CONS-0001", "石质文物", "酥碱", "丙烯酸乳液"),
+    seedPlan(2, "CONS-0002", "铁质文物", "锈蚀", "柠檬酸", {
+      负责人采纳: "采纳",
+      负责人意见: "同意按建议执行，注意除锈后中和漂洗。",
+      会签状态: "会签中"
+    }),
+    seedPlan(3, "CONS-0003", "石质文物", "酥碱", "柠檬酸")
+  ],
+  "artifact_writeback": [],
 }
