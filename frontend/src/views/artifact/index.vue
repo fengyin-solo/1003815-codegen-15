@@ -67,6 +67,89 @@
       <span>共 {{ total }} 条出土遗物记录</span>
       <span v-if="errorMessage" class="error-text">{{ errorMessage }}</span>
     </footer>
+
+    <section class="writeback-block">
+      <header class="block-head">
+        <div>
+          <h3>保护状态回写事项</h3>
+          <p class="page-desc">
+            来自现场保护「方案会签台」：会签方案通过后，按器物编号跨业务面回写保护状态；同一方案重复提交不会追加第二份。
+          </p>
+        </div>
+        <button class="btn" type="button" @click="reloadWritebacks">刷新回写事项</button>
+      </header>
+
+      <h4 class="sub-head">本页遗物相关（按器物编号匹配）</h4>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>回写事项</th>
+            <th>器物编号</th>
+            <th>保护对象 / 病害</th>
+            <th>回写内容</th>
+            <th>最终保护状态</th>
+            <th>回写状态</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in matchedWritebacks" :key="item.key">
+            <td>{{ item.planNo }}</td>
+            <td>{{ item.artifactNo }}</td>
+            <td>{{ item.objectName }} / {{ item.disease }}</td>
+            <td class="content-cell">{{ item.content }}</td>
+            <td>{{ item.finalStatus }}</td>
+            <td>
+              <span class="tag" :class="item.status === '已回写' ? 'ok' : 'warn'">{{ item.status }}</span>
+            </td>
+            <td>
+              <button
+                v-if="item.status === '待回写'"
+                class="link"
+                type="button"
+                @click="acknowledge(item.key)"
+              >
+                确认回写档案
+              </button>
+              <span v-else class="muted">已同步</span>
+            </td>
+          </tr>
+          <tr v-if="!matchedWritebacks.length">
+            <td colspan="7" class="empty-state">暂无按器物编号匹配到本页遗物的回写事项</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 class="sub-head">未匹配到遗物编号的回写事项</h4>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>回写事项</th>
+            <th>器物编号</th>
+            <th>保护对象 / 病害</th>
+            <th>回写内容</th>
+            <th>最终保护状态</th>
+            <th>回写状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in unmatchedItems" :key="item.key">
+            <td>{{ item.planNo }}</td>
+            <td>{{ item.artifactNo || '（方案未关联遗物编号）' }}</td>
+            <td>{{ item.objectName }} / {{ item.disease }}</td>
+            <td class="content-cell">{{ item.content }}</td>
+            <td>{{ item.finalStatus }}</td>
+            <td>
+              <span class="tag" :class="item.status === '已回写' ? 'ok' : 'warn'">{{ item.status }}</span>
+            </td>
+          </tr>
+          <tr v-if="!unmatchedItems.length">
+            <td colspan="6" class="empty-state">没有未匹配的回写事项</td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-if="writebackMessage" class="error-text">{{ writebackMessage }}</p>
+    </section>
   </section>
 </template>
 
@@ -79,6 +162,12 @@ import {
   moduleMeta,
   runAction as applyAction,
 } from '@/api/local-service'
+import {
+  acknowledgeWriteback,
+  unmatchedWritebacks,
+  writebacksForArtifact,
+  type ConservationWriteback,
+} from '@/api/conservation-service'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('artifact')
@@ -133,5 +222,29 @@ function reload() {
   }
 }
 
-onMounted(reload)
+const matchedWritebacks = ref<ConservationWriteback[]>([])
+const unmatchedItems = ref<ConservationWriteback[]>([])
+const writebackMessage = ref('')
+
+function reloadWritebacks() {
+  writebackMessage.value = ''
+  const nos = new Set(rows.value.map((row) => String(row['器物编号'] ?? '').trim()))
+  matchedWritebacks.value = [...nos].flatMap((no) => writebacksForArtifact(no))
+  unmatchedItems.value = unmatchedWritebacks()
+}
+
+function acknowledge(key: string) {
+  writebackMessage.value = ''
+  const result = acknowledgeWriteback(key)
+  if (!result.ok) {
+    writebackMessage.value = result.message
+    return
+  }
+  reloadWritebacks()
+}
+
+onMounted(() => {
+  reload()
+  reloadWritebacks()
+})
 </script>
